@@ -82,12 +82,11 @@ public class FeatureSelectionLoopStartNodeModel extends NodeModel implements Loo
 
     /**
      * @param nrPorts the number of in ports
-    *
+     *
      */
     public FeatureSelectionLoopStartNodeModel(final int nrPorts) {
         super(nrPorts, nrPorts);
     }
-
 
     /**
      * {@inheritDoc}
@@ -105,7 +104,8 @@ public class FeatureSelectionLoopStartNodeModel extends NodeModel implements Loo
         final String[] constantColumns;
         // check if no feature columns are selected (e.g. before the dialog is opened the first time)
         if (filterResult.getIncludes().length == 0) {
-            throw new InvalidSettingsException("No feature columns selected. Please specify the feature columns in the dialog.");
+            throw new InvalidSettingsException(
+                "No feature columns selected. Please specify the feature columns in the dialog.");
         }
 
         if (filterResult.getExcludes().length == 0) {
@@ -120,19 +120,22 @@ public class FeatureSelectionLoopStartNodeModel extends NodeModel implements Loo
             }
         }
         if (m_iteration == 0) {
+            // dispose already created feature selectors to cancel possibly started genetic algorithm thread
+            if (m_featureSelector != null) {
+                m_featureSelector.onDispose();
+            }
             // get feature selector
             try {
                 final AbstractColumnHandler columnHandler =
                     new DefaultColumnHandler(Arrays.asList(constantColumns), inSpecs[0]);
-                final FeatureSelectionStrategy strategy =
-                    FeatureSelectionStrategies.createFeatureSelectionStrategy(m_settings.getSelectionStrategy(),
-                        m_settings.getNrFeaturesThreshold(), columnHandler.getAvailableFeatures());
+                final FeatureSelectionStrategy strategy = FeatureSelectionStrategies
+                    .createFeatureSelectionStrategy(m_settings, columnHandler.getAvailableFeatures());
                 m_featureSelector = new FeatureSelector(strategy, columnHandler);
                 // push max iterations flowvariable
                 m_maxIterations = m_featureSelector.getNumberOfIterations();
                 pushFlowVariableInt("maxIterations", m_maxIterations);
             } catch (Throwable t) {
-                throw new InvalidSettingsException("Exception during feature selector setup", t);
+                throw new InvalidSettingsException("Exception during feature selector setup: " + t.getMessage(), t);
             }
         }
 
@@ -163,8 +166,6 @@ public class FeatureSelectionLoopStartNodeModel extends NodeModel implements Loo
 
         return m_featureSelector.getNextTables(exec, inData);
     }
-
-
 
     FeatureSelector getFeatureSelector() {
         return m_featureSelector;
@@ -226,6 +227,19 @@ public class FeatureSelectionLoopStartNodeModel extends NodeModel implements Loo
     @Override
     protected void reset() {
         m_iteration = 0;
+        if (m_featureSelector != null) {
+            m_featureSelector.onDispose();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onDispose() {
+        if (m_featureSelector != null) {
+            m_featureSelector.onDispose();
+        }
     }
 
 }

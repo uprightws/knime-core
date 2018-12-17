@@ -1,35 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<knimeNode icon="featureselection-start.png" type="LoopStart" xmlns="http://knime.org/node/v3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v3.6 http://knime.org/node/v3.6.xsd">
+<knimeNode icon="featureselection-start.png" type="LoopStart"
+	xmlns="http://knime.org/node/v3.6"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v3.6 http://knime.org/node/v3.6.xsd">
 	<name>Feature Selection Loop Start (1:1)</name>
 
-	<shortDescription>Start node for a feature selection loop</shortDescription>
+	<shortDescription>Start node for a feature selection loop
+	</shortDescription>
 
 	<fullDescription>
 		<intro>
-			This node is the start of the feature selection loop.  The feature selection loop allows you to select, from all the features in the input data set, the subset of features that is best for model construction.  
-			With this node you determine (i) which features/columns are to be held fixed in the selection process.  
-			These constant or "static" features/columns are included in each loop iteration and are exempt from elimination; (ii) which selection strategy is to be used on the other (variable) features/columns; and (iii) at which threshold number of variable features the selection process is to terminate.
+			This node is the start of the feature selection loop. The
+			feature selection loop allows you to select, from all the features in
+			the input data set, the subset of features that is best for model
+			construction.
+			With this node you determine (i) which features/columns
+			are to be held
+			fixed in the selection process.
+			These constant or
+			"static" features/columns are included in each loop
+			iteration and are
+			exempt from elimination; (ii) which selection
+			strategy is to be used
+			on the other (variable) features/columns and
+			its settings; and (iii)
+			at which threshold number of variable
+			features the selection process
+			is to terminate.
 		</intro>
 
-		<option name="Static and Variable Features">Columns can be selected manually or by means of regular expressions.  The columns in the left pane are the static columns, those in the right pane the variable columns.  Since a feature selection process always has a target feature and a set of features to select from, there will always be at least one static column and more than one variable column.  If you leave the left pane empty and run the node, you will get a warning.  Columns can be moved from one pane to the other by clicking on the appropriate button in the middle.
-		</option>
-		<option name="Feature selection strategy">
-			Here you can choose between two selection strategies: Forward Feature Selection and Backward Feature Elimination.
-		</option>
-		<option name="Use threshold for number of features">
-			Check this option if you want to set a bound for the number of selected features. Since Forward Feature Selection adds features while Backward Feature Elimination subtracts them, this will be an upper bound for Forward Feature Selection and a lower bound for Backward Feature Elimination.
-		</option>
-		<option name="Select threshold for number of features">
-			Set the upper or lower bound for the number of selected features.
-		</option>
-		<link href="https://www.knime.com/knime-introductory-course/chapter7/section2">
-			KNIME E-Learning Course: Section 7.2. Re-executing Workflow Parts: Loops
+		<tab name="General Settings">
+			<option name="Static and Variable Features">Columns can be selected manually or by means of
+				regular expressions. The columns in the left pane are the static
+				columns, those in the right pane the variable columns. Since a
+				feature selection process always has a target feature and a set of
+				features to select from, there will always be at least one static
+				column and more than one variable column. If you leave the left pane
+				empty and run the node, you will get a warning. Columns can be moved
+				from one pane to the other by clicking on the appropriate button in
+				the middle.
+			</option>
+			<option name="Feature selection strategy">
+				Here you can choose between the selection strategies: Forward
+				Feature Selection, Backward Feature Elimination, and
+				<a href="https://en.wikipedia.org/wiki/Genetic_algorithm">Genetic Algorithm</a>.
+			</option>
+			<option name="Use threshold for number of features">
+				Check this option if you want to set a bound for
+				the number of selected
+				features. Since Forward Feature Selection adds
+				features while
+				Backward Feature Elimination subtracts them, this will
+				be an upper
+				bound for Forward Feature Selection and a lower bound for
+				Backward
+				Feature Elimination.
+				For Genetic Feature Selection it will be
+				an upper bound, but while the
+				genetic algorithm tries its best
+				ensuring that this bound is not
+				exceeded, it cannot ensure this.
+			</option>
+			<option name="Select threshold for number of features">
+				Set the upper or lower bound for the number of
+				selected features.
+			</option>
+		</tab>
+		<tab name="Genetic Algorithm">
+			<option name="Population size">Defines the number of individuals in each
+				population.
+			</option>
+			<option name="Number of generations">
+				Defines the number of generations. The upper bound of number of
+				iterations is
+				<i>Population size * Number of generations</i>
+				,but usually less are needed.
+			</option>
+			<option name="Selection strategy">
+				Defines the strategy to use for the
+				<a
+					href="https://en.wikipedia.org/wiki/Selection_(genetic_algorithm)">selection of offspring</a>
+				.
+			</option>
+			<option name="Crossover strategy">
+				Defines the strategy to use for
+				<a
+					href="https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)"> crossover</a>
+				.
+			</option>
+			<option name="Crossover rate">
+				Defines the crossover rate used to alter
+				offspring.
+			</option>
+			<option name="Mutation rate">
+				Defines the mutation rate used to alter
+				offspring.
+			</option>
+			<option name="Elitism rate"> Defines the rate of how many of the best
+				individuals of a generation are transfered to the next generation
+				without alteration.
+			</option>
+			<option name="Use static random seed"> Choose a seed to get reproducible results.
+			</option>
+		</tab>
+		<link
+			href="https://www.knime.com/knime-introductory-course/chapter7/section2">
+			KNIME E-Learning Course: Section 7.2. Re-executing Workflow
+			Parts: Loops
 		</link>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Table containing features and constant columns">A data table containing all features
-		and static columns needed for the feature selection.</inPort>
-		<outPort index="0" name="Filtered table">The input table with some columns filtered out.</outPort>
+		<inPort index="0"
+			name="Table containing features and constant columns">A data table containing all features
+			and static columns needed
+			for the feature selection.
+		</inPort>
+		<outPort index="0" name="Filtered table">The input table with some columns
+			filtered out.
+		</outPort>
 	</ports>
 </knimeNode>

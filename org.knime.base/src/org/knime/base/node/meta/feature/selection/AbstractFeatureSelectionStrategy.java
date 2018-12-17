@@ -48,6 +48,7 @@
  */
 package org.knime.base.node.meta.feature.selection;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -100,7 +101,6 @@ public abstract class AbstractFeatureSelectionStrategy implements FeatureSelecti
      * @return the list of currently fixed included columns
      */
     protected abstract List<Integer> getIncluded();
-
 
     /**
      * @return true if the end of this search round is reached
@@ -172,13 +172,13 @@ public abstract class AbstractFeatureSelectionStrategy implements FeatureSelecti
             m_currentBestFeature = getCurrentFeature();
         }
 
-//        if (reachedEndOfRound()) {
-//            handleBestFeature(m_currentBestFeature);
-//            List<Integer> included = getIncluded();
-//            m_shouldStop = included.size() == m_subsetSize || reachedEndOfSearch();
-//        } else {
-//            nextFeature();
-//        }
+        //        if (reachedEndOfRound()) {
+        //            handleBestFeature(m_currentBestFeature);
+        //            List<Integer> included = getIncluded();
+        //            m_shouldStop = included.size() == m_subsetSize || reachedEndOfSearch();
+        //        } else {
+        //            nextFeature();
+        //        }
 
     }
 
@@ -189,7 +189,6 @@ public abstract class AbstractFeatureSelectionStrategy implements FeatureSelecti
     public boolean continueLoop() {
         return !m_shouldStop;
     }
-
 
     /**
      * {@inheritDoc}
@@ -223,8 +222,10 @@ public abstract class AbstractFeatureSelectionStrategy implements FeatureSelecti
      * {@inheritDoc}
      */
     @Override
-    public Integer getLastBestFeature() {
-        return m_lastBestFeature;
+    public List<Integer> getLastChange() {
+        List<Integer> list = new ArrayList<>();
+        list.add(m_lastBestFeature);
+        return list;
     }
 
     /**
@@ -245,4 +246,20 @@ public abstract class AbstractFeatureSelectionStrategy implements FeatureSelecti
      * @return the number of iterations the strategy needs to reach <b>subsetSize</b>
      */
     protected abstract int calcNumIterations(int subsetSize, int numFeatures);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onDispose() {
+        // nothing to do
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void finishRound() {
+        // nothing to do
+    }
 }
