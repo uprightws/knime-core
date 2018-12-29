@@ -51,8 +51,12 @@ import java.io.IOException;
 
 import org.knime.base.node.flowvariable.tablerowtovariable.TableToVariableNodeModel;
 import org.knime.core.data.DataRow;
+import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.RowIterator;
+import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.BufferedDataTable.KnowsRowCountTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.port.PortObject;
@@ -71,6 +75,10 @@ public class LoopStartVariableNodeModel extends TableToVariableNodeModel impleme
     // remember which iteration we are in:
     private int m_currentIteration = -1;
     private int m_maxNrIterations = -1;
+    // last seen table in #execute -- used for assertions
+    private DataTable m_lastTable;
+    // to fetch next row from
+    private RowIterator m_iterator;
 
     /** One input, one output.
      */
@@ -92,31 +100,37 @@ public class LoopStartVariableNodeModel extends TableToVariableNodeModel impleme
             final ExecutionContext exec) throws Exception {
         BufferedDataTable inData = (BufferedDataTable)inPOs[0];
         if (m_currentIteration == -1) {
+            closeIterator();
             // first time we see this, initialize counters:
             m_currentIteration = 0;
-            m_maxNrIterations = inData.getRowCount();
+            m_maxNrIterations = KnowsRowCountTable.checkRowCount(inData.size());
+            m_lastTable = inData;
+            m_iterator = m_lastTable.iterator();
         } else {
             if (m_currentIteration > m_maxNrIterations) {
                 throw new IOException("Loop did not terminate correctly.");
             }
         }
-        // ok, not nice: iterate over table until current row is reached
-        int i = 0;
-        DataRow row = null;
-        for (DataRow r : inData) {
-            i++;
-            row = r;
-            if (i > m_currentIteration) {
-                break;
-            }
-        }
+        assert m_lastTable == inData : "not the same table instance";
+        DataRow row = m_iterator.next();
         // put values for variables on stack, based on current row
         pushVariables(inData.getDataTableSpec(), row);
         // and add information about loop progress
         pushFlowVariableInt("maxIterations", m_maxNrIterations);
         pushFlowVariableInt("currentIteration", m_currentIteration);
         m_currentIteration++;
+        if (m_currentIteration == m_maxNrIterations) {
+            closeIterator();
+        }
         return new PortObject[]{FlowVariablePortObject.INSTANCE};
+    }
+
+    private void closeIterator() {
+        if (m_iterator instanceof CloseableRowIterator) {
+            ((CloseableRowIterator)m_iterator).close();
+        }
+        m_iterator = null;
+        m_lastTable = null;
     }
 
     /**
@@ -132,6 +146,15 @@ public class LoopStartVariableNodeModel extends TableToVariableNodeModel impleme
     protected void reset() {
         m_currentIteration = -1;
         m_maxNrIterations = -1;
+        closeIterator();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onDispose() {
+        closeIterator();
     }
 
 }
