@@ -370,6 +370,31 @@ public final class NodeLogger {
                 PropertyConfigurator.configure(file);
             }
         }
+        updateLog4JRootLoggerLevel();
+    }
+
+    /** Adjusts root logger's log level so that it matches the minimum level of all registered appenders.
+     * Called after initialization and after the log level is changed for individual appenders.
+     */
+    private static void updateLog4JRootLoggerLevel() {
+        final Logger rootLogger = LogManager.getRootLogger();
+        Level minimumLevel = Level.ERROR;
+        for (@SuppressWarnings("unchecked")
+        Enumeration<Appender> appenderEnum = rootLogger.getAllAppenders(); appenderEnum.hasMoreElements();) {
+            Appender next = appenderEnum.nextElement();
+            for (Filter filter = next.getFilter(); filter != null; filter = filter.getNext()) {
+                Level l = null;
+                if (filter instanceof LevelMatchFilter) {
+                    l = OptionConverter.toLevel(((LevelMatchFilter)filter).getLevelToMatch(), Level.FATAL);
+                } else if (filter instanceof LevelRangeFilter) {
+                    l = ((LevelRangeFilter)filter).getLevelMin();
+                }
+                if (l != null && minimumLevel.isGreaterOrEqual(l)) {
+                    minimumLevel = l;
+                }
+            }
+        }
+        rootLogger.setLevel(minimumLevel);
     }
 
     private static void copyCurrentLog4j(final File dest, final String latestLog4jConfig) throws IOException {
@@ -525,8 +550,6 @@ public final class NodeLogger {
      */
     private NodeLogger(final Logger logger) {
         m_logger = logger;
-        // this overrides the default ERROR level from the configuration file
-        m_logger.setLevel(Level.ALL);
     }
 
     /**
@@ -1064,6 +1087,7 @@ public final class NodeLogger {
         }
         Logger.getRootLogger().addAppender(app);
         checkLayoutFlags(layout);
+        updateLog4JRootLoggerLevel();
     }
 
     /**
